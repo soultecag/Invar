@@ -106,18 +106,38 @@ jobs:
             args: ""
 
     runs-on: ${{ matrix.os }}
-    # Declared at job level, not on the step that uses them: a step-level `env`
-    # is not visible to that step's own `if`, and the signing step has to be
-    # able to skip itself when no certificate is configured.
-    env:
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v7
+
+      # The Tauri bundler tests whether APPLE_CERTIFICATE and friends are *set*,
+      # not whether they are empty, and a missing secret still arrives as an
+      # empty string. Passing them through unconditionally (as a job-level `env`
+      # did) makes an unsigned build die with "failed to import keychain
+      # certificate"; reproduced locally with tauri-cli 2.11.4. So each one is
+      # exported only when it has a value. Variables written to GITHUB_ENV are
+      # also visible to later steps' `if`, which the exporter signing step uses.
+      - name: Load Apple signing credentials
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        env:
+          S_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          S_APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          S_APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          S_APPLE_ID: ${{ secrets.APPLE_ID }}
+          S_APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          S_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          delim="EOF_$(openssl rand -hex 16)"
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY \
+                      APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            src="S_$name"
+            if [ -n "${!src}" ]; then
+              printf '%s<<%s\n%s\n%s\n' "$name" "$delim" "${!src}" "$delim" >> "$GITHUB_ENV"
+              echo "$name: set"
+            else
+              echo "$name: not set"
+            fi
+          done
 
       - name: Install Linux build dependencies
         if: matrix.os == 'ubuntu-22.04'
@@ -169,10 +189,10 @@ jobs:
 
       - name: Build and bundle
         uses: tauri-apps/tauri-action@v0
-        # The Apple signing and notarization variables come from the job `env`
-        # above. Without them the build still succeeds, but the .dmg is only
-        # ad-hoc signed and Gatekeeper tells anyone who downloads it that the
-        # app "is damaged".
+        # The Apple signing and notarization variables come from the loading
+        # step above. Without them the build still succeeds, but the .dmg is
+        # only ad-hoc signed and Gatekeeper tells anyone who downloads it that
+        # the app "is damaged".
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -183,14 +203,46 @@ jobs:
       # so it is signed here with the same identity or not at all.
       # The copy inside the .app is signed by tauri-action along with the
       # bundle. This signs the standalone copy that is attached to the release.
-      - name: Sign the headless exporter
-        if: matrix.os == 'macos-latest' && env.APPLE_SIGNING_IDENTITY != ''
+      #
+      # Tauri imports the certificate into a keychain of its own and deletes
+      # that keychain when bundling ends, so by now the identity is gone from
+      # the runner and has to be imported again.
+      #
+      # A bare Mach-O cannot carry a stapled notarization ticket. Gatekeeper
+      # looks it up online on first run instead, but it still has to exist:
+      # a signed, unnotarized download is refused just like an unsigned one.
+      - name: Sign and notarize the headless exporter
+        if: matrix.os == 'macos-latest' && env.APPLE_CERTIFICATE != '' && env.APPLE_SIGNING_IDENTITY != ''
         working-directory: src-tauri
+        shell: bash
         run: |
-          codesign --force --options runtime --timestamp \
-            --sign "$APPLE_SIGNING_IDENTITY" \
-            target/universal-apple-darwin/release/invar-export
-          codesign --verify --verbose target/universal-apple-darwin/release/invar-export
+          BIN=target/universal-apple-darwin/release/invar-export
+          KC="$RUNNER_TEMP/exporter-signing.keychain-db"
+          KC_PW="$(openssl rand -hex 16)"
+          echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KC_PW" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KC_PW" "$KC"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KC" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          rm "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KC_PW" "$KC" > /dev/null
+
+          codesign --force --options runtime --timestamp --keychain "$KC" \
+            --sign "$APPLE_SIGNING_IDENTITY" "$BIN"
+          codesign --verify --verbose "$BIN"
+          security delete-keychain "$KC"
+
+          if [ -n "$APPLE_ID" ]; then
+            ditto -c -k "$BIN" "$RUNNER_TEMP/invar-export.zip"
+            # notarytool can exit 0 on a rejected submission, so the verdict is
+            # read from the result rather than trusted from the exit code.
+            out=$(xcrun notarytool submit "$RUNNER_TEMP/invar-export.zip" \
+              --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" --wait --output-format json)
+            echo "$out"
+            echo "$out" | jq -e '.status == "Accepted"' > /dev/null
+          fi
 
       - name: Attach the headless exporter
         shell: bash

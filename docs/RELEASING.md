@@ -47,6 +47,13 @@ in the GitHub repo (`https://github.com/virtualFrog/Invar/settings/secrets/actio
 You need an Apple Developer Program membership (99 USD/year). A free Apple ID
 cannot issue the certificate this needs.
 
+**Current state.** All six are set as of 2026-10-15, from the certificate
+*Developer ID Application: Dario Doerflinger (B3U6TGB37J)*, which **expires
+2027-11-14**. Releases signed before then stay valid after it, because the
+signature carries a secure timestamp; only new releases need a new certificate.
+Renewing means steps 2 to 4 again and replacing `APPLE_CERTIFICATE` and
+`APPLE_CERTIFICATE_PASSWORD`. The other four do not change.
+
 ### 1. `APPLE_TEAM_ID`
 
 Your 10-character team identifier, e.g. `A1B2C3D4E5`.
@@ -74,6 +81,10 @@ Getting the certificate, if you do not already have one:
    distributed outside the Mac App Store, *not* "Mac Development" and *not*
    "Mac App Distribution"), upload the request file, and download the resulting
    `.cer`.
+
+   The next page asks for a **Profile Type** and preselects *Previous Sub-CA*.
+   Choose **G2 Sub-CA** instead: every certificate issued from the previous
+   Sub-CA expires on 2027-02-01, however recently it was created.
 4. Double-click the `.cer` to install it into your login keychain.
 
 Then read the exact identity string back:
