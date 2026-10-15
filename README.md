@@ -80,9 +80,14 @@ administrator rights**; the `.msi` installs **per machine** into
 `C:\Program Files` and **requires elevation**, which makes it the one for Group
 Policy or Intune. If you are not a local administrator, take the `-setup.exe`.
 
+The Windows installers are not code-signed yet, so SmartScreen shows *"Windows
+protected your PC"* on first run. Choose **More info**, then **Run anyway**. The
+macOS build is signed and notarized and opens normally.
+
 Each release also ships `invar-export`, the headless exporter, as a standalone
 binary for each platform. It is also installed alongside the desktop app on
-Windows, though neither installer puts it on `PATH`.
+Windows, though neither installer puts it on `PATH`. A browser download does not
+keep the executable bit, so on macOS and Linux run `chmod +x` on it first.
 
 Linux packages need `libwebkit2gtk-4.1-0` and `libgtk-3-0`, which the `.deb` and
 `.rpm` declare as dependencies.
