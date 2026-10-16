@@ -88,7 +88,7 @@ rustup default stable-x86_64-pc-windows-msvc
 ## 2. Get the code
 
 ```powershell
-git clone https://github.com/virtualFrog/Invar.git
+git clone https://github.com/soultecag/Invar.git
 ```
 
 ```powershell

@@ -66,7 +66,7 @@ each column header shows how much of that column vCenter actually populated.
 ## Install
 
 Download the build for your platform from the
-[Releases](https://github.com/virtualFrog/Invar/releases) page.
+[Releases](https://github.com/soultecag/Invar/releases) page.
 
 | Platform | File |
 |---|---|
