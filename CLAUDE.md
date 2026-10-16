@@ -8,7 +8,7 @@ otherwise cost debugging cycles to rediscover.
 
 This repo is **Invar**, a fork of
 `dalehassinger/VMware-Explore-Hackathon-2026-Live`. All work happens here and is
-pushed to `origin` (`virtualFrog/Invar`). The original repo is wired up as
+pushed to `origin` (`soultecag/Invar`). The original repo is wired up as
 `upstream` and is read-only for us; pull from it with `git fetch upstream`.
 
 A prior working implementation exists at `../VMware-Explore-Hackathon-2026/Tauri/`

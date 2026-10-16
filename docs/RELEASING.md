@@ -42,7 +42,7 @@ download, not a corrupt file.
 
 Six repository secrets. Add them at
 **Settings > Secrets and variables > Actions > New repository secret**
-in the GitHub repo (`https://github.com/virtualFrog/Invar/settings/secrets/actions`).
+in the GitHub repo (`https://github.com/soultecag/Invar/settings/secrets/actions`).
 
 You need an Apple Developer Program membership (99 USD/year). A free Apple ID
 cannot issue the certificate this needs.
