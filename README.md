@@ -184,6 +184,6 @@ JavaScript frontend. No framework, no build step for the UI.
 
 GNU General Public License v3.0 or later. See [`LICENSE`](LICENSE).
 
-Originally forked from
-[dalehassinger/VMware-Explore-Hackathon-2026-Live](https://github.com/dalehassinger/VMware-Explore-Hackathon-2026-Live)
-and rewritten.
+Invar grew out of Dale Hassinger's VMware Explore 2026 hackathon project,
+[VMware-Explore-Hackathon-2026-Live](https://github.com/dalehassinger/VMware-Explore-Hackathon-2026-Live),
+also GPLv3, and still contains parts of its code.

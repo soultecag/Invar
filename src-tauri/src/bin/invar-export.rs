@@ -216,7 +216,7 @@ async fn run(args: Args) -> Result<Vec<String>, String> {
 
     // Log out rather than leaving sessions to their ~30 minute idle timeout.
     // A job that runs every hour would otherwise hold every session it ever
-    // opened, which is exactly how the reference implementation reached ~300.
+    // opened, which is exactly how an earlier version of this app reached ~300.
     cache.close_all().await;
 
     if let Some(out) = &args.xlsx {

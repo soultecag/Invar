@@ -1,27 +1,17 @@
 # CLAUDE.md - Invar
 
-Drop this at the root of the new repo. Claude Code reads it automatically at the
-start of every session, so it front-loads the domain knowledge that would
-otherwise cost debugging cycles to rediscover.
+Claude Code reads this automatically at the start of every session, so it
+front-loads the domain knowledge that would otherwise cost debugging cycles to
+rediscover.
 
 ## Repo layout — read this first
 
-This repo is **Invar**, a fork of
-`dalehassinger/VMware-Explore-Hackathon-2026-Live`. All work happens here and is
-pushed to `origin` (`soultecag/Invar`). The original repo is wired up as
-`upstream` and is read-only for us; pull from it with `git fetch upstream`.
+This repo is **Invar**. All work happens here and is pushed to `origin`
+(`soultecag/Invar`). It is a standalone project with no upstream to sync from.
 
-A prior working implementation exists at `../VMware-Explore-Hackathon-2026/Tauri/`
-in the original author's setup. It is **not checked out in this working copy**, so
-treat any reference to it below as conditional on cloning it yourself. Where it is
-available, consult it for vCenter property paths, SOAP request shapes and RVTools
-column mappings.
-
-- It is **reference only. Never modify anything under it.**
-- Treat it as a source of understanding, not code to copy. Write fresh
-  implementations here.
-- It has known defects; the "Improvements required" list in `docs/BUILD-PLAN.md`
-  says what to do differently. Don't reproduce them.
+Invar grew out of Dale Hassinger's VMware Explore 2026 hackathon project, and
+parts of that code are still in it. The README credits it, and that line stays:
+the project is GPLv3, which requires a modified version to say so.
 
 ## Companion references in this repo
 
@@ -31,7 +21,7 @@ These live under `docs/`.
   empty results are expected rather than bugs
 - `docs/VCENTER-PROPERTY-REFERENCE.md` — 89 verified vim25 property paths by object type
 - `docs/RVTOOLS-SHEETS-AND-COLUMNS.md` — all 27 RVTools sheets with exact column names,
-  and how much of each the reference implementation covers
+  and the RVTools export format we reproduce
 - `docs/RUNNING-ON-WINDOWS.md` — prerequisites, commands and troubleshooting for
   building and running on Windows
 
@@ -221,8 +211,8 @@ Two things that make the count harder to read than it sounds:
 
 ## Architecture that worked
 
-Learned from the reference implementation — worth adopting from the start rather
-than refactoring into later.
+Each of these was learned by having to retrofit it once. Keep them; don't
+refactor them away.
 
 ### Separate core logic from the UI framework
 
@@ -282,7 +272,7 @@ to query should be reported, not silently dropped from the results.
 
 ## Security (build it right the first time)
 
-The reference implementation got these wrong; don't inherit them.
+An earlier version of this code got each of these wrong; don't reintroduce them.
 
 - **Escape HTML when rendering vCenter data.** VM annotations and names are
   free-text and become XSS if interpolated into `innerHTML`. In a Tauri webview
