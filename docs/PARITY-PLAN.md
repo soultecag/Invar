@@ -3,7 +3,7 @@
 Goal: bring Invar to feature parity with RVTools.
 
 This plan is derived from `docs/RVTOOLS-SHEETS-AND-COLUMNS.md` (the column spec),
-read against the code actually in this repo as of the fork. It is a roadmap, not
+read against the code actually in this repo as of 2026-09-03. It is a roadmap, not
 a schedule: sizes are relative, and every sheet still has to satisfy the ground
 rule in `CLAUDE.md`, namely that no vCenter property path gets written without
 being queried live first.
@@ -577,8 +577,8 @@ Both were named as inherited defects in `CLAUDE.md`.
    neither the file nor the webview, and an old file's cleartext passwords are
    migrated on first read. Headless machines with no credential store use
    `INVAR_PASSWORD_<n>`.
-2. **If the Linux web-service mode in Phase 6 happens, authenticate it.** The
-   reference implementation bound `0.0.0.0` with no auth and an endpoint that
+2. **If the Linux web-service mode in Phase 6 happens, authenticate it.** An
+   earlier version of this code bound `0.0.0.0` with no auth and an endpoint that
    returned stored vCenter credentials in cleartext. Do not inherit that.
 3. **Certificate verification was off with no way to turn it on. Fixed
    2026-09-10.** `src/main.js` hardcoded `skip_cert_verify: true` on every saved
@@ -598,7 +598,7 @@ The second item here is settled and recorded so it stays settled.
    `docs/LAB-ENVIRONMENT.md` is re-documented against it and records the
    connection, how credentials are kept out of this public repo, and which empty
    results are expected there rather than bugs. The previous entry pointed at
-   the upstream author's lab, which does not resolve here.
+   a different lab, which does not resolve here.
 
    Ground rule 1 in `CLAUDE.md` still holds and is now cheap to satisfy: no new
    property path gets written before it has been queried against this vCenter.

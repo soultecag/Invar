@@ -219,7 +219,7 @@ summary.productInfo
 
 ## Known-unavailable
 
-Don't burn hackathon time on these — they need different API areas entirely:
+These need different API areas entirely:
 
 | RVTools sheet | Why it's hard |
 |---|---|
