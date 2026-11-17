@@ -1,6 +1,7 @@
 # Lab Environment
 
-The vCenter Invar is developed and verified against. Point the app here.
+The vCenter Invar is developed and verified against: what it holds, how it
+behaves, and which results from it are expected rather than bugs.
 
 Documented 2026-09-03, from live queries against the environment itself. Counts
 drift as the lab changes — see [Inventory volatility](#inventory-volatility),
@@ -15,12 +16,15 @@ which matters more here than in a typical lab.
 > someone renames them in vCenter and re-captures the fixtures. Nothing in the
 > product depends on these names; only the fixture-backed tests do.
 
-> **This repo is public.** The vCenter password is deliberately kept out of git.
-> It lives in `LAB-CREDENTIALS.local.md` at the repo root, which is gitignored
-> (as is `*.local.md`). Shell snippets below expect `$VC_PASS` to be set:
+> **This repo is public.** The lab's hostname, addresses and password are
+> deliberately kept out of git. They live in `LAB-CREDENTIALS.local.md` at the
+> repo root, which is gitignored (as is `*.local.md`). Object names in this file
+> (`esx01`, `datacenter01`, `cluster01`, `vsanDatastore`, `vds01`) are the same
+> stand-ins the sanitised fixtures use, not the lab's real names. Shell snippets
+> below expect these to be set:
 >
 > ```bash
-> export VC_HOST='vcenter.lab.local'
+> export VC_HOST='<host from LAB-CREDENTIALS.local.md>'
 > export VC_USER='administrator@vsphere.local'
 > export VC_PASS='<password from LAB-CREDENTIALS.local.md>'
 > ```
@@ -31,29 +35,26 @@ which matters more here than in a typical lab.
 
 | | |
 |---|---|
-| Host | `vcenter.lab.local` |
-| IP | `192.0.2.30` |
+| Host and IP | see `LAB-CREDENTIALS.local.md` (untracked) |
 | Username | `administrator@vsphere.local` |
 | Password | see `LAB-CREDENTIALS.local.md` (untracked) |
 | Certificate | Self-signed, issued by `CN=CA, DC=vsphere, DC=local` — the HTTP client must skip verification (`skip_cert_verify: true`) |
 | Product | VMware vCenter Server 9.1.1.0, build 25712839 (`apiVersion` 9.1.1.0). Upgraded from 9.1.0.0300 build 25629530 on 2026-09-03 by VCF; the ESXi hosts were still on 9.1.0.0200 at that point. |
-| Instance UUID | `4a71e257-79f7-4f23-f86e-8e1219fa46f8` |
 
-This is the **management vCenter of a VCF 9 fleet**, and it manages the
-`esx*` ESXi hosts. An earlier version of this file described a different
+This is the **management vCenter of a VCF 9 fleet**, and it manages the three
+ESXi hosts described below. An earlier version of this file described a different
 lab, which does not resolve from here.
 
 ### DNS gotcha
 
-`nslookup vcenter.lab.local` returns **NXDOMAIN** against the
-corporate AD DNS server (`dns01.corp.local`, 192.0.2.100), yet the name
-resolves fine for `curl` and the app. The `lab.local` zone is served by a
+`nslookup "$VC_HOST"` returns **NXDOMAIN** against the corporate AD DNS server,
+yet the name resolves fine for `curl` and the app. The lab's zone is served by a
 different resolver reachable over the lab network path. **A failed `nslookup` is
-not evidence the app cannot reach vCenter** — test with `curl` instead:
+not evidence the app cannot reach vCenter.** Test with `curl` instead:
 
 ```bash
 curl -sk -o /dev/null -w '%{remote_ip} %{http_code}\n' "https://$VC_HOST/"
-# expect: 192.0.2.30 200
+# expect: the vCenter's IP, then 200
 ```
 
 ### Credential handling
@@ -116,7 +117,7 @@ so 161 is the number vInfo should produce. Do not "fix" a 161 against a REST-der
 
 ### Hosts
 
-`esx01`, `esx02`, `esx03` (all `.lab.local`)
+`esx01`, `esx02`, `esx03`
 
 Identical physical boxes, and real server hardware rather than nested ESXi:
 
@@ -128,7 +129,7 @@ Identical physical boxes, and real server hardware rather than nested ESXi:
 | NICs / HBAs | 6 / 1 |
 | Memory tiering | DRAM only |
 
-All three have NTP configured (`192.0.2.10`) and `ntpd` running, so they produce
+All three have an NTP server configured and `ntpd` running, so they produce
 **no vHealth findings** — see below.
 
 ### Datastores
@@ -261,7 +262,7 @@ never the VM name:
 
 ```
 [vsanDatastore] 25d5d052-b7c3-359a-644d-96ccd0cdc7d2/appliance01.vmx
-                          ^ folder is a UUID, VM is "appliance01"
+                ^ folder is a UUID, VM is "appliance01"
 ```
 
 So the check fires for every VM and always will, on any vSAN-backed inventory.
@@ -373,7 +374,7 @@ default ACLs. Confirmed on this machine 2026-09-03:
 ```
 NT AUTHORITY\SYSTEM        FullControl
 BUILTIN\Administrators     FullControl     <-- any local admin read the password
-<DOMAIN>\<user>  FullControl
+<DOMAIN>\<user>            FullControl
 ```
 
 The file is still chmod'd `0600` on Unix, because it still names every vCenter

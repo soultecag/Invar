@@ -17,7 +17,8 @@ the project is GPLv3, which requires a modified version to say so.
 
 These live under `docs/`.
 
-- `docs/LAB-ENVIRONMENT.md` — vCenter host, credentials, what's in the lab, and which
+- `docs/LAB-ENVIRONMENT.md` — what's in the lab vCenter, how to reach it (host and
+  password stay in the untracked `LAB-CREDENTIALS.local.md`), and which
   empty results are expected rather than bugs
 - `docs/VCENTER-PROPERTY-REFERENCE.md` — 89 verified vim25 property paths by object type
 - `docs/RVTOOLS-SHEETS-AND-COLUMNS.md` — all 27 RVTools sheets with exact column names,

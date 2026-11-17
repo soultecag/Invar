@@ -133,7 +133,7 @@ Consequences:
 
 ### Verified against a live vCenter, 2026-09-03
 
-Run against `vcenter.lab.local` (vCenter 9.1.0.0300 build 25629530;
+Run against the lab vCenter in `docs/LAB-ENVIRONMENT.md` (vCenter 9.1.0.0300 build 25629530;
 3 hosts, 161 VMs incl. 7 templates). Both commits were built and run on the same
 vCenter minutes apart, via `examples/parity_probe` (the five per-sheet fetchers,
 which is exactly what `fetch_all_tables` did at cf626b8) and
@@ -593,7 +593,7 @@ One blocker stands in front of Phase 1, and it is not solved by writing Rust.
 The second item here is settled and recorded so it stays settled.
 
 1. **A vCenter to develop against: settled as of 2026-09-03.**
-   `vcenter.lab.local`, a VCF 9 management domain running vSphere
+   The lab vCenter, a VCF 9 management domain running vSphere
    Supervisor — 3 HPE DL380 Gen10 hosts, 161 VMs, vSAN-backed.
    `docs/LAB-ENVIRONMENT.md` is re-documented against it and records the
    connection, how credentials are kept out of this public repo, and which empty
